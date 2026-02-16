@@ -180,7 +180,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                     
                     <div className="relative z-10">
                         <span className="text-xs font-bold uppercase tracking-widest text-stone-400">{t.equity}</span>
-                        <div className="text-6xl font-serif font-medium mt-3 tracking-tight text-stone-900">{formatMoney(userEquity)}</div>
+                        <div className="text-4xl md:text-6xl font-serif font-medium mt-3 tracking-tight text-stone-900 break-words">{formatMoney(userEquity)}</div>
                     </div>
                     <div className="relative z-10 flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
@@ -195,36 +195,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
         )}
       </div>
 
-      {/* STICKY SEARCH & FILTER BAR */}
-      <section className="sticky-filters border-b border-stone-200/60 px-6 py-4 mb-10 transition-all">
+      {/* STICKY SEARCH & FILTER BAR (COMPACT VERSION) */}
+      <section className="sticky-filters border-b border-stone-200/60 px-6 py-2 md:py-3 mb-8 transition-all shadow-sm">
         
-        {/* Global Search Bar */}
-        <div className="relative mb-6 max-w-3xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
+        {/* Global Search Bar - Slimmer */}
+        <div className="relative mb-3 max-w-3xl">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={16} />
             <input 
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search assets, locations, or collections..." 
-                className="w-full bg-white/50 border border-stone-200 rounded-2xl py-3 pl-12 pr-12 font-serif text-lg text-stone-900 focus:border-stone-400 focus:bg-white focus:shadow-md outline-none transition-all placeholder:text-stone-400" 
+                placeholder="Search assets..." 
+                className="w-full bg-white/70 border border-stone-200 rounded-xl py-2 pl-10 pr-10 font-serif text-sm md:text-base text-stone-900 focus:border-stone-400 focus:bg-white outline-none transition-all placeholder:text-stone-400" 
             />
             {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 hover:bg-stone-200 p-1 rounded-full transition-colors">
-                    <X size={16} className="text-stone-500" />
+                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 hover:bg-stone-200 p-0.5 rounded-full transition-colors">
+                    <X size={14} className="text-stone-500" />
                 </button>
             )}
         </div>
 
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-             {/* Category Filters */}
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 md:gap-6">
+             {/* Category Filters - Slimmer Pills */}
              <div className="flex flex-wrap gap-2">
                 {categories.map(cat => (
                     <button
                         key={cat.id}
                         onClick={() => handleCategoryChange(cat.id)}
-                        className={`px-5 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 ${
+                        className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 ${
                             selectedCategory === cat.id 
-                            ? 'bg-stone-900 text-stone-50 shadow-lg shadow-stone-900/20 transform scale-105' 
+                            ? 'bg-stone-900 text-stone-50 shadow-md transform scale-105' 
                             : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-400 hover:text-stone-900'
                         }`}
                     >
@@ -233,51 +233,52 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                 ))}
              </div>
 
-             <div className="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-end">
+             <div className="flex items-center gap-4 w-full xl:w-auto justify-between xl:justify-end">
                  {/* Sort Toggle */}
                  <button 
                     onClick={() => setSortOrder(prev => prev === 'ASC' ? 'DESC' : 'ASC')}
                     className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-colors whitespace-nowrap"
                  >
                     <ArrowUpDown size={14} strokeWidth={2} />
-                    Price: {sortOrder === 'ASC' ? 'Low to High' : 'High to Low'}
+                    <span className="hidden md:inline">Price: {sortOrder === 'ASC' ? 'Low to High' : 'High to Low'}</span>
+                    <span className="md:hidden">Sort</span>
                  </button>
 
                  {/* View Mode Toggle */}
-                 <div className="flex items-center bg-white rounded-xl border border-stone-200 p-1 shadow-sm">
+                 <div className="flex items-center bg-white rounded-lg border border-stone-200 p-0.5 shadow-sm">
                     <button 
                         onClick={() => setViewMode('LIST')}
-                        className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === 'LIST' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                         title="List View"
                     >
-                        <List size={18} strokeWidth={2} />
+                        <List size={16} strokeWidth={2} />
                     </button>
                     <button 
                         onClick={() => setViewMode('GRID')}
-                        className={`p-2 rounded-lg transition-all ${viewMode === 'GRID' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === 'GRID' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                         title="Grid View"
                     >
-                        <LayoutGrid size={18} strokeWidth={2} />
+                        <LayoutGrid size={16} strokeWidth={2} />
                     </button>
                     <button 
                         onClick={() => setViewMode('COMPACT')}
-                        className={`p-2 rounded-lg transition-all ${viewMode === 'COMPACT' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === 'COMPACT' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
                         title="Compact View"
                     >
-                        <Grid size={18} strokeWidth={2} />
+                        <Grid size={16} strokeWidth={2} />
                     </button>
                  </div>
              </div>
         </div>
 
-        {/* Subcategory Filters */}
+        {/* Subcategory Filters - Compact Row */}
         {availableSubtypes.length > 0 && (
-            <div className="flex items-center gap-4 animate-in fade-in slide-in-from-top-2 mt-6 overflow-x-auto no-scrollbar pb-2">
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest shrink-0">Filter By:</span>
-                <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 mt-2 overflow-x-auto no-scrollbar pb-1">
+                <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest shrink-0">Type:</span>
+                <div className="flex flex-wrap gap-1.5">
                     <button
                         onClick={() => setSelectedSubcategory('ALL')}
-                        className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all ${
+                        className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full border transition-all ${
                             selectedSubcategory === 'ALL'
                             ? 'bg-stone-800 text-white border-stone-800'
                             : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
@@ -289,7 +290,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                         <button
                             key={sub}
                             onClick={() => setSelectedSubcategory(sub)}
-                            className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all ${
+                            className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full border transition-all ${
                                 selectedSubcategory === sub
                                 ? 'bg-stone-800 text-white border-stone-800'
                                 : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
