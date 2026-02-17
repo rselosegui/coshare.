@@ -9,7 +9,6 @@ import { Profile } from './components/Profile';
 import { Header } from './components/Header';
 import { Settings } from './components/Settings';
 import { Navigation } from './components/Navigation';
-import { Sidebar } from './components/Sidebar';
 import { InfoPage } from './components/InfoPage';
 import { ConciergeChat } from './components/ConciergeChat';
 import { ViewState, Locale, Currency, Asset, User, InfoType } from './types';
@@ -313,22 +312,7 @@ const App = () => {
           />
       )}
 
-      {/* Desktop Sidebar - Adaptive Navigation */}
-      {view !== 'LANDING' && view !== 'AUTH' && (
-          <Sidebar 
-            currentView={view} 
-            setView={setView} 
-            user={user} 
-            lang={lang} 
-            onSignIn={() => {
-                setAuthRedirect('DASHBOARD');
-                setView('AUTH');
-            }} 
-            onLogout={handleLogout}
-          />
-      )}
-
-      {/* Main Navigation (Bottom Dock - Mobile Only) */}
+      {/* Navigation (Floating Dock - Mobile & Desktop) */}
       <Navigation 
         user={user}
         currentView={view}
@@ -337,10 +321,14 @@ const App = () => {
         setLang={setLang}
         handleLogout={handleLogout}
         onDashboardClick={handleDashboardClick}
+        onSignIn={() => {
+            setAuthRedirect('DASHBOARD');
+            setView('AUTH');
+        }}
       />
 
-      {/* Dynamic Content Area (Shifted right on desktop if Sidebar is visible) */}
-      <div className={`min-h-screen ${view !== 'LANDING' && view !== 'AUTH' ? 'md:pl-64' : ''} transition-all duration-300`}>
+      {/* Dynamic Content Area - Full width */}
+      <div className={`min-h-screen transition-all duration-300`}>
         {renderView()}
       </div>
       
