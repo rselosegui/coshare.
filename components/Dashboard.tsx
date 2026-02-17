@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Asset, Currency, Locale, User } from '../types';
 import { DICTIONARY, MOCK_ASSETS, CURRENCY_RATES } from '../constants';
-import { TrendingUp, ShieldCheck, Filter, ArrowUpDown, LayoutGrid, List, Grid, ArrowLeft, Search, X } from 'lucide-react';
+import { TrendingUp, ShieldCheck, Filter, ArrowUpDown, LayoutGrid, List, Grid, ArrowLeft, Search, X, Calendar, ArrowUpRight } from 'lucide-react';
 import { AssetCard } from './AssetCard';
 
 interface DashboardProps {
@@ -62,6 +62,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
     return MOCK_ASSETS.filter(a => user.portfolio.includes(a.id))
                       .reduce((sum, a) => sum + a.pricePerFraction, 0);
   }, [user]);
+
+  // Projected Yield (Mock: 12.5%)
+  const projectedYield = useMemo(() => userEquity * 0.125, [userEquity]);
 
   const baseAssets = useMemo(() => MOCK_ASSETS.filter(asset => asset.visibility === 'PUBLIC'), []);
 
@@ -124,6 +127,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
             z-index: 40;
             background: rgba(250, 250, 249, 0.95); /* Stone 50 with opacity */
             backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e7e5e4;
         }
       `}</style>
 
@@ -170,33 +174,91 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
             </div>
         </header>
 
-        {/* Financial Overview (Real Data) */}
+        {/* Financial & Timeline Overview */}
         {!isGuest && (
-            <section className="grid grid-cols-1 mb-16">
-                <div className="rounded-3xl border border-stone-200 bg-white p-8 flex flex-col justify-between h-56 relative overflow-hidden group shadow-lg shadow-stone-900/5 hover:shadow-xl hover:shadow-stone-900/10 transition-all duration-500">
-                    <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-                        <TrendingUp size={120} />
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+                
+                {/* 1. White Luxury Equity Card - Sharp Borders, No Shadows */}
+                <div className="lg:col-span-2 rounded-3xl border border-stone-200 bg-white p-8 relative overflow-hidden group hover:border-stone-900 transition-colors duration-500 flex flex-col justify-between min-h-[220px]">
+                     <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-700 text-stone-900">
+                        <TrendingUp size={160} />
                     </div>
-                    
-                    <div className="relative z-10">
+                    <div>
                         <span className="text-xs font-bold uppercase tracking-widest text-stone-400">{t.equity}</span>
                         <div className="text-4xl md:text-6xl font-serif font-medium mt-3 tracking-tight text-stone-900 break-words">{formatMoney(userEquity)}</div>
                     </div>
-                    <div className="relative z-10 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                             <TrendingUp size={16} strokeWidth={2.5} />
+                    <div className="flex items-end justify-between mt-6 relative z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
+                                <TrendingUp size={16} strokeWidth={2.5} />
+                            </div>
+                            <span className="text-sm font-bold text-stone-600">
+                                {userEquity > 0 ? '+12.5% Appreciation' : 'Start building your portfolio'}
+                            </span>
                         </div>
-                        <span className="text-sm font-semibold text-stone-600">
-                            {userEquity > 0 ? '+12.5% Appreciation YTD' : 'Start building your portfolio'}
-                        </span>
+                        {/* Yield Pill */}
+                        {userEquity > 0 && (
+                            <div className="hidden md:block text-right">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Proj. Annual Yield</div>
+                                <div className="text-xl font-serif text-stone-900">~{formatMoney(projectedYield)}</div>
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* 2. Upcoming Timeline / Actions */}
+                <div className="flex flex-col gap-4">
+                     {/* Yield Card - Stark Black */}
+                    <div className="bg-stone-900 text-white p-6 rounded-3xl flex items-center justify-between relative overflow-hidden group shadow-lg">
+                         <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                         <div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Net Yield (YTD)</span>
+                            <div className="text-2xl font-serif mt-1">{formatMoney(projectedYield * 0.75)}</div>
+                         </div>
+                         <div className="p-3 bg-white/20 rounded-full">
+                            <ArrowUpRight size={20} />
+                         </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="bg-white border border-stone-200 p-6 rounded-3xl flex-1 hover:border-stone-400 transition-colors">
+                        <div className="flex items-center justify-between mb-4">
+                             <span className="text-xs font-bold uppercase tracking-widest text-stone-400">Timeline</span>
+                             <span className="text-[10px] font-bold uppercase text-stone-300">Oct 2025</span>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex items-start gap-4 group cursor-pointer">
+                                <div className="flex flex-col items-center">
+                                    <div className="text-[10px] font-bold text-stone-900 uppercase">12</div>
+                                    <div className="text-[9px] font-bold text-stone-400 uppercase">Oct</div>
+                                </div>
+                                <div className="flex-1 pb-4 border-b border-stone-100 group-last:border-0">
+                                    <div className="text-sm font-serif font-bold text-stone-900 group-hover:text-stone-600 transition-colors">Downtown Views Stay</div>
+                                    <div className="text-[10px] text-stone-400 uppercase tracking-wide mt-0.5 flex items-center gap-1">
+                                        <Calendar size={10} /> 7 Days Confirmed
+                                    </div>
+                                </div>
+                            </div>
+                             <div className="flex items-start gap-4 group cursor-pointer">
+                                <div className="flex flex-col items-center">
+                                    <div className="text-[10px] font-bold text-stone-400 uppercase">01</div>
+                                    <div className="text-[9px] font-bold text-stone-400 uppercase">Nov</div>
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-sm font-serif font-bold text-stone-400">Q4 Dividend Payout</div>
+                                    <div className="text-[10px] text-stone-300 uppercase tracking-wide mt-0.5">Pending Processing</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </section>
         )}
       </div>
 
       {/* STICKY SEARCH & FILTER BAR (COMPACT VERSION) */}
-      <section className="sticky-filters border-b border-stone-200/60 px-6 py-2 md:py-3 mb-8 transition-all shadow-sm">
+      <section className="sticky-filters px-6 py-2 md:py-3 mb-8 transition-all">
         
         {/* Global Search Bar - Slimmer */}
         <div className="relative mb-3 max-w-3xl">
@@ -206,7 +268,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search assets..." 
-                className="w-full bg-white/70 border border-stone-200 rounded-xl py-2 pl-10 pr-10 font-serif text-sm md:text-base text-stone-900 focus:border-stone-400 focus:bg-white outline-none transition-all placeholder:text-stone-400" 
+                className="w-full bg-white/80 border border-stone-200 rounded-xl py-2 pl-10 pr-10 font-serif text-sm md:text-base text-stone-900 focus:border-stone-900 focus:bg-white outline-none transition-all placeholder:text-stone-400 shadow-sm" 
             />
             {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 hover:bg-stone-200 p-0.5 rounded-full transition-colors">
@@ -216,16 +278,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
         </div>
 
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 md:gap-6">
-             {/* Category Filters - Slimmer Pills */}
+             {/* Category Filters - High Contrast Pills */}
              <div className="flex flex-wrap gap-2">
                 {categories.map(cat => (
                     <button
                         key={cat.id}
                         onClick={() => handleCategoryChange(cat.id)}
-                        className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 ${
+                        className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 border ${
                             selectedCategory === cat.id 
-                            ? 'bg-stone-900 text-stone-50 shadow-md transform scale-105' 
-                            : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-400 hover:text-stone-900'
+                            ? 'bg-stone-900 text-white border-stone-900 shadow-md transform scale-105' 
+                            : 'bg-white text-stone-500 border-stone-200 hover:border-stone-900 hover:text-stone-900'
                         }`}
                     >
                         {cat.label}
@@ -248,21 +310,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                  <div className="flex items-center bg-white rounded-lg border border-stone-200 p-0.5 shadow-sm">
                     <button 
                         onClick={() => setViewMode('LIST')}
-                        className={`p-1.5 rounded-md transition-all ${viewMode === 'LIST' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === 'LIST' ? 'bg-stone-100 text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
                         title="List View"
                     >
                         <List size={16} strokeWidth={2} />
                     </button>
                     <button 
                         onClick={() => setViewMode('GRID')}
-                        className={`p-1.5 rounded-md transition-all ${viewMode === 'GRID' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === 'GRID' ? 'bg-stone-100 text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
                         title="Grid View"
                     >
                         <LayoutGrid size={16} strokeWidth={2} />
                     </button>
                     <button 
                         onClick={() => setViewMode('COMPACT')}
-                        className={`p-1.5 rounded-md transition-all ${viewMode === 'COMPACT' ? 'bg-stone-100 text-stone-900 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === 'COMPACT' ? 'bg-stone-100 text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
                         title="Compact View"
                     >
                         <Grid size={16} strokeWidth={2} />
@@ -281,7 +343,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                         className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full border transition-all ${
                             selectedSubcategory === 'ALL'
                             ? 'bg-stone-800 text-white border-stone-800'
-                            : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                            : 'bg-white text-stone-500 border-stone-200 hover:border-stone-900 hover:text-stone-900'
                         }`}
                     >
                         All
@@ -293,7 +355,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
                             className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full border transition-all ${
                                 selectedSubcategory === sub
                                 ? 'bg-stone-800 text-white border-stone-800'
-                                : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                                : 'bg-white text-stone-500 border-stone-200 hover:border-stone-900 hover:text-stone-900'
                             }`}
                         >
                             {sub}
@@ -334,7 +396,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, currency, lang, onAs
             ))}
             </div>
         ) : (
-            <div className="py-32 text-center border-2 border-dashed border-stone-200 rounded-3xl bg-stone-50/50">
+            <div className="py-32 text-center border-2 border-dashed border-stone-200 rounded-3xl bg-white">
                 <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6 text-stone-300">
                      <Filter className="h-8 w-8" strokeWidth={1.5} />
                 </div>

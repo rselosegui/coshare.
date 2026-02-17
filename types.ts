@@ -4,6 +4,13 @@ export type Locale = 'en' | 'ar';
 export type InfoType = 'MANIFESTO' | 'MEMBERSHIP' | 'LEGAL' | 'CONTACT';
 export type ViewState = 'LANDING' | 'AUTH' | 'DASHBOARD' | 'ASSET_DETAIL' | 'VAULT' | 'UPLOAD' | 'PROFILE' | 'SETTINGS' | 'PRIVACY' | 'INFO';
 
+export interface ChatMessage {
+  id: string;
+  sender: 'USER' | 'AGENT' | 'SYSTEM';
+  text: string;
+  timestamp: Date;
+}
+
 export interface UserPreferences {
   notifications: {
     email: boolean;

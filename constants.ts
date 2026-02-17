@@ -7,6 +7,21 @@ export const CURRENCY_RATES: Record<string, number> = {
   GBP: 0.21,
 };
 
+export const VIBE_TAGS = [
+    "Global Citizen",
+    "Art Patron",
+    "Petrolhead",
+    "Design Aficionado",
+    "Wellness Advocate",
+    "Sustainable Investor",
+    "Horology Expert",
+    "Gastronome",
+    "Ski Alpinist",
+    "Equestrian",
+    "Philanthropist",
+    "Architectural enthusiast"
+];
+
 export const DICTIONARY = {
   en: {
     welcome: "Welcome to coshare",

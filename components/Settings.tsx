@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Locale } from '../types';
-import { ArrowLeft, Bell, MessageSquare, Save, Mail, Phone, User as UserIcon, Shield, Globe, Fingerprint, Eye, EyeOff, Smartphone, LogOut, Lock, Search, Sparkles, Tag, ShieldAlert, History } from 'lucide-react';
+import { ArrowLeft, Bell, MessageSquare, Save, Mail, Phone, User as UserIcon, Shield, Globe, Fingerprint, Eye, EyeOff, Smartphone, LogOut, Lock, Search, Sparkles, Tag, ShieldAlert, History, Check } from 'lucide-react';
+import { VIBE_TAGS } from '../constants';
 
 interface SettingsProps {
     user: User;
@@ -19,6 +20,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, lang, onUpdateUser, on
     const [email, setEmail] = useState(user.email);
     const [phone, setPhone] = useState(user.phone);
     const [prefs, setPrefs] = useState(user.settings);
+    const [vibeTags, setVibeTags] = useState(user.vibeTags);
 
     // Privacy Form State
     const [privacy, setPrivacy] = useState(user.privacy);
@@ -31,7 +33,8 @@ export const Settings: React.FC<SettingsProps> = ({ user, lang, onUpdateUser, on
             email,
             phone,
             settings: prefs,
-            privacy: privacy
+            privacy: privacy,
+            vibeTags: vibeTags
         });
         onBack();
     };
@@ -52,6 +55,16 @@ export const Settings: React.FC<SettingsProps> = ({ user, lang, onUpdateUser, on
             ...privacy,
             [key]: !privacy[key]
         });
+    };
+
+    const toggleVibeTag = (tag: string) => {
+        if (vibeTags.includes(tag)) {
+            setVibeTags(vibeTags.filter(t => t !== tag));
+        } else {
+            if (vibeTags.length >= 3) return; // Max 3
+            if (navigator.vibrate) navigator.vibrate(10);
+            setVibeTags([...vibeTags, tag]);
+        }
     };
 
     const ToggleButton = ({ isActive, onClick }: { isActive: boolean; onClick: () => void }) => (
@@ -170,6 +183,38 @@ export const Settings: React.FC<SettingsProps> = ({ user, lang, onUpdateUser, on
                                         />
                                     </div>
                                 </div>
+                            </div>
+                        </section>
+
+                        {/* Public Persona / Vibe Tags */}
+                        <section>
+                            <h2 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-6 flex items-center gap-2">
+                                <Tag className="w-4 h-4" /> Public Persona
+                            </h2>
+                            <p className="text-xs text-stone-500 mb-6 leading-relaxed">
+                                Select up to 3 verified tags to display on your profile. These badges signify your standing within the Coshare community.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {VIBE_TAGS.map(tag => {
+                                    const isSelected = vibeTags.includes(tag);
+                                    return (
+                                        <button
+                                            key={tag}
+                                            onClick={() => toggleVibeTag(tag)}
+                                            className={`
+                                                px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border
+                                                ${isSelected 
+                                                    ? 'bg-stone-900 text-white border-stone-900 shadow-md' 
+                                                    : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'}
+                                            `}
+                                        >
+                                            {tag} {isSelected && <Check size={10} className="inline ml-1 mb-0.5" strokeWidth={3} />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-4 text-[10px] text-right text-stone-400">
+                                {vibeTags.length} / 3 Selected
                             </div>
                         </section>
 

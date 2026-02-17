@@ -9,7 +9,9 @@ import { Profile } from './components/Profile';
 import { Header } from './components/Header';
 import { Settings } from './components/Settings';
 import { Navigation } from './components/Navigation';
+import { Sidebar } from './components/Sidebar';
 import { InfoPage } from './components/InfoPage';
+import { ConciergeChat } from './components/ConciergeChat';
 import { ViewState, Locale, Currency, Asset, User, InfoType } from './types';
 
 const App = () => {
@@ -24,6 +26,9 @@ const App = () => {
   
   const [authRedirect, setAuthRedirect] = useState<ViewState>('DASHBOARD');
   const [infoPageType, setInfoPageType] = useState<InfoType>('MANIFESTO');
+  
+  // Chat State
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // --- Scroll Restoration Logic ---
   const dashboardScrollRef = useRef(0);
@@ -57,7 +62,7 @@ const App = () => {
       email: 'member@coshare.ae',
       phone: '+971 50 000 0000',
       isVerified: data.isVerified,
-      vibeTags: ['Early Adopter', 'Frequent Flyer'],
+      vibeTags: ['Art Patron', 'Global Citizen'],
       wishlist: [],
       portfolio: ['1', '3'], // Mock initial portfolio
       settings: {
@@ -234,6 +239,8 @@ const App = () => {
                 lang={lang}
                 onAssetClick={handleAssetClick}
                 onToggleWishlist={toggleWishlist}
+                onBrowse={() => setView('DASHBOARD')}
+                onOpenChat={() => setIsChatOpen(true)}
               />
           );
       case 'ASSET_DETAIL':
@@ -288,7 +295,7 @@ const App = () => {
   };
 
   return (
-    <main className="bg-white min-h-screen text-black antialiased selection:bg-black selection:text-white">
+    <main className="bg-stone-50 min-h-screen text-stone-900 antialiased selection:bg-stone-900 selection:text-white relative">
       {/* Global Header */}
       {view !== 'AUTH' && (
           <Header 
@@ -306,7 +313,22 @@ const App = () => {
           />
       )}
 
-      {/* Main Navigation (Universal Bottom Dock - Mobile Only) */}
+      {/* Desktop Sidebar - Adaptive Navigation */}
+      {view !== 'LANDING' && view !== 'AUTH' && (
+          <Sidebar 
+            currentView={view} 
+            setView={setView} 
+            user={user} 
+            lang={lang} 
+            onSignIn={() => {
+                setAuthRedirect('DASHBOARD');
+                setView('AUTH');
+            }} 
+            onLogout={handleLogout}
+          />
+      )}
+
+      {/* Main Navigation (Bottom Dock - Mobile Only) */}
       <Navigation 
         user={user}
         currentView={view}
@@ -317,16 +339,21 @@ const App = () => {
         onDashboardClick={handleDashboardClick}
       />
 
-      {/* Dynamic Content Area (No sidebar padding) */}
-      <div className="min-h-screen">
+      {/* Dynamic Content Area (Shifted right on desktop if Sidebar is visible) */}
+      <div className={`min-h-screen ${view !== 'LANDING' && view !== 'AUTH' ? 'md:pl-64' : ''} transition-all duration-300`}>
         {renderView()}
       </div>
       
+      {/* Concierge Chat Overlay */}
+      {user && (
+          <ConciergeChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      )}
+      
       {/* Global "Status" Heartbeat (Only show when logged in) */}
       {user && (
-        <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 pointer-events-none z-40 opacity-50 mix-blend-difference text-white">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-[10px] font-bold tracking-widest">SYSTEM: ONLINE</span>
+        <div className="fixed bottom-4 right-4 hidden md:flex items-center gap-2 pointer-events-none z-40 opacity-50 mix-blend-difference text-stone-500">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-[9px] font-bold tracking-widest uppercase">Status: Ready</span>
         </div>
       )}
     </main>

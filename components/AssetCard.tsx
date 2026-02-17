@@ -40,15 +40,15 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, viewMode, currency,
             className={`
                 group cursor-pointer transition-all duration-300 animate-in fade-in bg-white
                 ${viewMode === 'GRID' 
-                    ? 'flex flex-col rounded-3xl overflow-hidden shadow-lg shadow-stone-900/5 hover:shadow-2xl hover:shadow-stone-900/10 hover:-translate-y-1' 
+                    ? 'flex flex-col rounded-3xl overflow-hidden border border-stone-200 hover:border-stone-900 hover:shadow-xl hover:shadow-stone-900/5' 
                     : ''
                 }
                 ${viewMode === 'LIST' 
-                    ? 'flex flex-col md:flex-row gap-6 p-4 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-stone-900/5 border border-transparent hover:border-stone-100' 
+                    ? 'flex flex-col md:flex-row gap-6 p-4 rounded-3xl border border-stone-100 hover:border-stone-900' 
                     : ''
                 }
                 ${viewMode === 'COMPACT' 
-                    ? 'flex flex-col gap-2 rounded-2xl overflow-hidden shadow-sm hover:shadow-md' 
+                    ? 'flex flex-col gap-2 rounded-2xl overflow-hidden border border-stone-100 hover:border-stone-400' 
                     : ''
                 }
             `}
@@ -56,7 +56,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, viewMode, currency,
             {/* Image Container */}
             <div className={`
                 relative overflow-hidden
-                ${viewMode === 'GRID' ? 'aspect-[4/3] w-full' : ''}
+                ${viewMode === 'GRID' ? 'aspect-[4/3] w-full border-b border-stone-100' : ''}
                 ${viewMode === 'LIST' ? 'w-full md:w-72 aspect-[4/3] md:aspect-video shrink-0 rounded-2xl' : ''}
                 ${viewMode === 'COMPACT' ? 'aspect-square w-full' : ''}
             `}>
@@ -69,7 +69,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, viewMode, currency,
                             Owned
                         </div>
                     ) : (
-                        <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-bold text-stone-900 uppercase tracking-widest rounded-full shadow-sm">
+                        <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 text-[10px] font-bold text-stone-900 uppercase tracking-widest rounded-full shadow-sm border border-stone-100">
                             {asset.fractionsAvailable}/8 Avail
                         </div>
                     )}
@@ -83,10 +83,10 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, viewMode, currency,
                             onToggleWishlist(asset.id);
                         }}
                         className={`
-                            absolute top-4 left-4 p-2.5 rounded-full backdrop-blur-md transition-all z-20 shadow-sm
+                            absolute top-4 left-4 p-2.5 rounded-full backdrop-blur-md transition-all z-20 shadow-sm border
                             ${user?.wishlist?.includes(asset.id) 
-                                ? 'bg-stone-900 text-white hover:bg-stone-800' 
-                                : 'bg-white/90 text-stone-900 hover:bg-white'}
+                                ? 'bg-stone-900 text-white border-stone-900 hover:bg-stone-800' 
+                                : 'bg-white/90 text-stone-900 border-white hover:border-stone-200'}
                         `}
                     >
                             <Heart size={16} fill={user?.wishlist?.includes(asset.id) ? "currentColor" : "none"} strokeWidth={2} />
@@ -95,7 +95,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, viewMode, currency,
                 
                 {/* Grid View Overlay Gradient */}
                 {viewMode === 'GRID' && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
             </div>
             

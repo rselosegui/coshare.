@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Asset, Currency, Locale, CalendarWeek, User } from '../types';
 import { DICTIONARY, CURRENCY_RATES, generateWeeks } from '../constants';
-import { ArrowLeft, MapPin, Info, CheckCircle, Heart, Share2, Sparkles, X, Copy, Mail, MessageCircle, Twitter, Check, Minus, Lock, Calendar, TrendingUp, Shield } from 'lucide-react';
+import { ArrowLeft, MapPin, Info, CheckCircle, Heart, Share2, Sparkles, X, Copy, Mail, MessageCircle, Twitter, Check, Minus, Lock, Calendar, TrendingUp, Shield, FileText, PenTool, Banknote } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 interface AssetDetailProps {
@@ -24,8 +24,14 @@ export const AssetDetail: React.FC<AssetDetailProps> = ({ asset, currency, lang,
   const [copied, setCopied] = useState(false);
   
   // Purchase Ceremony State
-  const [showPurchaseSuccess, setShowPurchaseSuccess] = useState(false);
+  const [showContract, setShowContract] = useState(false); // Step 1: Contract Review
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showPurchaseSuccess, setShowPurchaseSuccess] = useState(false); // Step 2: Success
   const [processing, setProcessing] = useState(false);
+
+  // Resale Request State
+  const [showResaleModal, setShowResaleModal] = useState(false);
+  const [resaleRequested, setResaleRequested] = useState(false);
 
   useEffect(() => {
     // Scroll to top when asset detail loads
@@ -69,18 +75,43 @@ export const AssetDetail: React.FC<AssetDetailProps> = ({ asset, currency, lang,
     }
   };
 
-  const initiatePurchase = () => {
+  // Step 1: Open Contract
+  const openContractModal = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      setShowContract(true);
+  };
+
+  // Step 2: Execute Purchase
+  const executeSmartContract = () => {
+      if (!agreedToTerms) return;
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      
+      setShowContract(false);
       setProcessing(true);
+      
+      // Simulate blockchain transaction time
       setTimeout(() => {
           setProcessing(false);
           setShowPurchaseSuccess(true);
-      }, 1500);
+      }, 2500);
   };
 
   const completePurchaseFlow = () => {
       setShowPurchaseSuccess(false);
       onPurchase(asset.id);
   };
+
+  const handleResaleRequest = () => {
+      setProcessing(true);
+      setTimeout(() => {
+          setProcessing(false);
+          setResaleRequested(true);
+          setTimeout(() => {
+            setShowResaleModal(false);
+            setResaleRequested(false); // Reset for demo purposes
+          }, 3000);
+      }, 1500);
+  }
 
   const isWishlisted = user?.wishlist?.includes(asset.id);
   const isOwned = user?.portfolio?.includes(asset.id);
@@ -253,62 +284,79 @@ export const AssetDetail: React.FC<AssetDetailProps> = ({ asset, currency, lang,
             {/* Right Col: Smart Calendar or Owner Privileges */}
             <div className="space-y-8">
                 {isOwned ? (
-                    // --- OWNER VIEW: Functional Calendar ---
-                    <div className="bg-white border border-stone-200 p-6 rounded-3xl shadow-sm animate-in fade-in">
-                        <div className="flex justify-between items-center mb-6">
-                            <span className="text-sm font-bold uppercase tracking-widest text-stone-900">{t.bookWeek}</span>
-                            <span className="text-[10px] bg-green-100 text-green-800 px-3 py-1 font-bold uppercase tracking-wide rounded-full">Owner Access</span>
-                        </div>
-
-                        <div className="space-y-3">
-                            {weeks.map((week, idx) => (
-                                <div 
-                                    key={idx}
-                                    onClick={() => toggleRentBack(idx)}
-                                    className={`
-                                        relative p-4 border rounded-2xl transition-all duration-200 cursor-pointer flex justify-between items-center shadow-sm
-                                        ${week.isBooked 
-                                            ? 'bg-stone-50 border-stone-200 text-stone-400 cursor-not-allowed' 
-                                            : week.isRentBack
-                                                ? 'bg-stone-900 text-white border-stone-900'
-                                                : 'bg-white border-stone-100 hover:border-stone-300 hover:shadow-md'
-                                        }
-                                    `}
-                                >
-                                    <div className="text-sm font-medium">
-                                        {new Date(week.startDate).toLocaleDateString(lang, {month: 'short', day: 'numeric'})} - 
-                                        {new Date(new Date(week.startDate).getTime() + 6*24*60*60*1000).toLocaleDateString(lang, {month: 'short', day: 'numeric'})}
-                                    </div>
-                                    
-                                    {week.isBooked ? (
-                                        <span className="text-[10px] font-bold uppercase">Reserved</span>
-                                    ) : week.isRentBack ? (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold uppercase text-green-400">+{formatMoney(week.price)}</span>
-                                            <CheckCircle size={16} className="text-green-400" strokeWidth={2}/>
-                                        </div>
-                                    ) : (
-                                        <div className="w-5 h-5 border-2 border-current rounded-full" />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-stone-100">
-                            <div className="flex justify-between text-sm mb-4">
-                                <span className="text-stone-500">Projected Rent-Back</span>
-                                <span className="font-bold text-green-600">
-                                    {formatMoney(weeks.filter(w => w.isRentBack).reduce((acc, curr) => acc + curr.price, 0))}
-                                </span>
+                    // --- OWNER VIEW: Functional Calendar & Liquidity ---
+                    <div className="space-y-4 sticky top-24">
+                        <div className="bg-white border border-stone-200 p-6 rounded-3xl shadow-sm animate-in fade-in">
+                            <div className="flex justify-between items-center mb-6">
+                                <span className="text-sm font-bold uppercase tracking-widest text-stone-900">{t.bookWeek}</span>
+                                <span className="text-[10px] bg-green-100 text-green-800 px-3 py-1 font-bold uppercase tracking-wide rounded-full">Owner Access</span>
                             </div>
-                            <button disabled className="w-full py-4 bg-stone-100 text-stone-400 font-bold uppercase tracking-widest cursor-default rounded-xl">
-                                Asset Owned
-                            </button>
+
+                            <div className="space-y-3">
+                                {weeks.map((week, idx) => (
+                                    <div 
+                                        key={idx}
+                                        onClick={() => toggleRentBack(idx)}
+                                        className={`
+                                            relative p-4 border rounded-xl transition-all duration-300 cursor-pointer flex justify-between items-center group shadow-sm
+                                            ${week.isBooked 
+                                                ? 'bg-stone-50 border-stone-200 text-stone-400 cursor-not-allowed' 
+                                                : week.isRentBack
+                                                    ? 'bg-stone-900 text-white border-stone-900' // Rent back active
+                                                    : 'bg-white border-stone-200 hover:bg-stone-900 hover:text-white hover:border-stone-900' // High contrast hover
+                                            }
+                                        `}
+                                    >
+                                        <div className="text-sm font-medium font-serif">
+                                            {new Date(week.startDate).toLocaleDateString(lang, {month: 'short', day: 'numeric'})} - 
+                                            {new Date(new Date(week.startDate).getTime() + 6*24*60*60*1000).toLocaleDateString(lang, {month: 'short', day: 'numeric'})}
+                                        </div>
+                                        
+                                        {week.isBooked ? (
+                                            <span className="text-[10px] font-bold uppercase">Reserved</span>
+                                        ) : week.isRentBack ? (
+                                            <div className="flex items-center gap-2 animate-in zoom-in">
+                                                <span className="text-[10px] font-bold uppercase text-green-400">+{formatMoney(week.price)}</span>
+                                                <CheckCircle size={16} className="text-green-400" strokeWidth={2}/>
+                                            </div>
+                                        ) : (
+                                            <div className="w-5 h-5 border-2 border-stone-300 group-hover:border-white rounded-full transition-colors" />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-6 pt-6 border-t border-stone-100">
+                                <div className="flex justify-between text-sm mb-4">
+                                    <span className="text-stone-500 font-medium">Projected Rent-Back</span>
+                                    <span className="font-bold text-green-600 font-serif text-lg">
+                                        {formatMoney(weeks.filter(w => w.isRentBack).reduce((acc, curr) => acc + curr.price, 0))}
+                                    </span>
+                                </div>
+                                <button disabled className="w-full py-4 bg-stone-100 text-stone-400 font-bold uppercase tracking-widest cursor-default rounded-xl">
+                                    Asset Owned
+                                </button>
+                            </div>
+                        </div>
+
+                         {/* Secondary Market Action */}
+                        <div className="bg-stone-900 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden group">
+                             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                                <Banknote size={80} />
+                             </div>
+                             <h4 className="font-serif font-medium text-lg mb-1">Need Liquidity?</h4>
+                             <p className="text-xs text-stone-400 mb-6 max-w-[200px]">Submit your fraction for valuation and secondary market listing.</p>
+                             <button 
+                                onClick={() => setShowResaleModal(true)}
+                                className="w-full py-3 bg-white text-stone-900 font-bold uppercase tracking-widest rounded-full hover:bg-stone-200 transition-colors text-xs"
+                             >
+                                Request Resale
+                             </button>
                         </div>
                     </div>
                 ) : (
                     // --- NON-OWNER VIEW: Sales Pitch ---
-                    <div className="bg-stone-900 text-white p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[500px] animate-in slide-in-from-right-4 duration-700 shadow-2xl shadow-stone-900/30">
+                    <div className="bg-stone-900 text-white p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between min-h-[500px] animate-in slide-in-from-right-4 duration-700 shadow-2xl shadow-stone-900/30 sticky top-24">
                         {/* Abstract Background Decoration */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-12 translate-x-12 pointer-events-none" />
                         
@@ -356,7 +404,7 @@ export const AssetDetail: React.FC<AssetDetailProps> = ({ asset, currency, lang,
                                 {asset.fractionsAvailable} Fractions Remaining
                             </div>
                             <button 
-                                onClick={initiatePurchase}
+                                onClick={openContractModal}
                                 disabled={processing}
                                 className="w-full py-4 bg-white text-stone-900 font-bold uppercase tracking-widest hover:bg-stone-200 transition-all active:scale-95 rounded-full flex items-center justify-center gap-2 shadow-lg"
                             >
@@ -414,6 +462,135 @@ export const AssetDetail: React.FC<AssetDetailProps> = ({ asset, currency, lang,
           </div>
       )}
 
+      {/* Contract Review Modal */}
+      {showContract && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="bg-white max-w-lg w-full relative shadow-2xl rounded-3xl animate-in slide-in-from-bottom-8 duration-300 flex flex-col max-h-[90vh]">
+                
+                {/* Modal Header */}
+                <div className="p-8 border-b border-stone-100 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-2xl font-serif font-medium text-stone-900">Digital Contract</h2>
+                        <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mt-1">Transaction Review</p>
+                    </div>
+                    <button onClick={() => setShowContract(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* Modal Content - Scrollable */}
+                <div className="p-8 overflow-y-auto custom-scrollbar">
+                    {/* Asset Summary */}
+                    <div className="bg-stone-50 rounded-2xl p-6 mb-8 flex gap-4 items-center">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                            <img src={asset.imageUrl} className="w-full h-full object-cover" alt="asset" />
+                        </div>
+                        <div>
+                            <h3 className="font-serif font-bold text-stone-900">{asset.title}</h3>
+                            <p className="text-xs uppercase tracking-widest text-stone-500">1/8 Fractional Ownership</p>
+                            <p className="text-sm font-bold mt-1">{formatMoney(asset.pricePerFraction)}</p>
+                        </div>
+                    </div>
+
+                    {/* Legal Text */}
+                    <div className="prose prose-sm prose-stone mb-8 text-stone-600">
+                        <p>
+                            This Purchase Agreement ("Agreement") serves as a binding commitment to acquire 12.5% equity in the SPV holding the asset described above.
+                        </p>
+                        <p>
+                            By executing this smart contract, you acknowledge:
+                        </p>
+                        <ul className="list-disc pl-4 space-y-2 text-xs">
+                            <li>You are an accredited investor or meet the financial criteria for this asset class.</li>
+                            <li>The asset is subject to a 12-month lock-up period before resale on the secondary market.</li>
+                            <li>Usage rights are governed by the rotating booking calendar.</li>
+                            <li>Management fees are deducted automatically from yield payouts.</li>
+                        </ul>
+                    </div>
+
+                    {/* Agreement Checkbox */}
+                    <label className="flex items-start gap-4 p-4 border border-stone-200 rounded-xl cursor-pointer hover:border-stone-400 transition-colors bg-white">
+                        <div className={`mt-0.5 w-5 h-5 border-2 rounded-md flex items-center justify-center transition-colors ${agreedToTerms ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-300'}`}>
+                            {agreedToTerms && <Check size={14} strokeWidth={3} />}
+                        </div>
+                        <input 
+                            type="checkbox" 
+                            className="hidden" 
+                            checked={agreedToTerms} 
+                            onChange={(e) => setAgreedToTerms(e.target.checked)} 
+                        />
+                        <div className="text-xs text-stone-600 leading-relaxed select-none">
+                            I have read the Offering Memorandum and agree to the <span className="underline font-bold text-stone-900">Terms of Service</span> and <span className="underline font-bold text-stone-900">Privacy Policy</span>. I understand this transaction is final and recorded on the ledger.
+                        </div>
+                    </label>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="p-6 border-t border-stone-100 bg-stone-50 rounded-b-3xl">
+                    <button 
+                        onClick={executeSmartContract}
+                        disabled={!agreedToTerms}
+                        className={`w-full py-4 font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-3 transition-all shadow-lg
+                            ${agreedToTerms 
+                                ? 'bg-stone-900 text-white hover:scale-[1.02] active:scale-95' 
+                                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                            }
+                        `}
+                    >
+                        <PenTool size={16} /> Execute Smart Contract
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Resale Request Modal */}
+      {showResaleModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+               <div className="bg-white max-w-md w-full relative shadow-2xl rounded-3xl animate-in zoom-in-95 duration-300 overflow-hidden">
+                    {!resaleRequested ? (
+                        <div className="p-8">
+                             <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mb-6">
+                                <Banknote size={24} className="text-stone-900" />
+                             </div>
+                             <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Request Valuation</h3>
+                             <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+                                Our concierge team will assess the current market value of your fraction and prepare it for listing on the secondary market.
+                             </p>
+                             <div className="bg-stone-50 p-4 rounded-2xl border border-stone-100 mb-8">
+                                <div className="flex justify-between text-sm mb-2">
+                                    <span className="text-stone-500">Estimated Range</span>
+                                    <span className="font-bold">{formatMoney(asset.pricePerFraction * 1.1)} - {formatMoney(asset.pricePerFraction * 1.25)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-stone-500">Admin Fee</span>
+                                    <span className="font-bold">2.5%</span>
+                                </div>
+                             </div>
+                             <div className="flex gap-4">
+                                 <button onClick={() => setShowResaleModal(false)} className="flex-1 py-3 border border-stone-200 text-stone-500 font-bold uppercase tracking-widest rounded-full hover:bg-stone-50 transition-colors text-xs">Cancel</button>
+                                 <button 
+                                    onClick={handleResaleRequest}
+                                    disabled={processing}
+                                    className="flex-1 py-3 bg-stone-900 text-white font-bold uppercase tracking-widest rounded-full hover:bg-stone-800 transition-colors text-xs flex items-center justify-center"
+                                >
+                                    {processing ? 'Submitting...' : 'Submit Request'}
+                                </button>
+                             </div>
+                        </div>
+                    ) : (
+                        <div className="p-12 text-center">
+                            <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle size={32} />
+                            </div>
+                            <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">Request Received</h3>
+                            <p className="text-sm text-stone-500">A concierge will contact you within 24 hours with a formal valuation.</p>
+                        </div>
+                    )}
+               </div>
+          </div>
+      )}
+
       {/* Purchase Success Modal */}
       {showPurchaseSuccess && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-900/80 backdrop-blur-md p-4 animate-in fade-in duration-500">
@@ -434,6 +611,14 @@ export const AssetDetail: React.FC<AssetDetailProps> = ({ asset, currency, lang,
                     </button>
               </div>
           </div>
+      )}
+
+      {processing && !showContract && !showPurchaseSuccess && !showResaleModal && (
+         <div className="fixed inset-0 z-[110] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+             <div className="w-16 h-16 border-4 border-stone-200 border-t-stone-900 rounded-full animate-spin mb-6"/>
+             <div className="text-lg font-serif font-medium text-stone-900">Processing Transaction...</div>
+             <div className="text-xs font-bold uppercase tracking-widest text-stone-400 mt-2">Do not close this window</div>
+         </div>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Asset, Currency, Locale, User } from '../types';
 import { MOCK_ASSETS, CURRENCY_RATES } from '../constants';
-import { ShieldCheck, TrendingUp, LayoutGrid, List, Grid, QrCode, Phone, MessageSquare, ArrowUpRight, FileText, Clock, FileCheck } from 'lucide-react';
+import { ShieldCheck, TrendingUp, LayoutGrid, List, Grid, QrCode, Phone, MessageSquare, ArrowUpRight, FileText, Clock, FileCheck, ArrowRight, Diamond } from 'lucide-react';
 import { AssetCard } from './AssetCard';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, YAxis } from 'recharts';
 
@@ -11,9 +11,11 @@ interface ProfileProps {
   lang: Locale;
   onAssetClick: (asset: Asset) => void;
   onToggleWishlist: (id: string) => void;
+  onBrowse: () => void;
+  onOpenChat: () => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ user, currency, lang, onAssetClick, onToggleWishlist }) => {
+export const Profile: React.FC<ProfileProps> = ({ user, currency, lang, onAssetClick, onToggleWishlist, onBrowse, onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<'PORTFOLIO' | 'WISHLIST'>('PORTFOLIO');
   
   // Default to 'COMPACT' (Mosaic) on mobile (< 768px), 'GRID' on desktop
@@ -121,7 +123,10 @@ export const Profile: React.FC<ProfileProps> = ({ user, currency, lang, onAssetC
                             <Phone size={20} className="mb-2 group-hover:scale-110 transition-transform" />
                             <span className="text-[10px] font-bold uppercase tracking-widest text-center">Request Call</span>
                         </button>
-                        <button className="flex flex-col items-center justify-center p-4 bg-stone-50 border border-stone-100 hover:border-stone-900 hover:bg-stone-900 hover:text-white transition-all group rounded-2xl">
+                        <button 
+                            onClick={onOpenChat}
+                            className="flex flex-col items-center justify-center p-4 bg-stone-50 border border-stone-100 hover:border-stone-900 hover:bg-stone-900 hover:text-white transition-all group rounded-2xl"
+                        >
                             <MessageSquare size={20} className="mb-2 group-hover:scale-110 transition-transform" />
                             <span className="text-[10px] font-bold uppercase tracking-widest text-center">Chat Now</span>
                         </button>
@@ -141,7 +146,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, currency, lang, onAssetC
                          </div>
                          <div className="text-right">
                              <div className="text-xl font-bold text-green-600 flex items-center justify-end gap-1">
-                                <TrendingUp size={20} /> +12.4%
+                                <TrendingUp size={20} /> {totalEquity > 0 ? '+12.4%' : '0.0%'}
                              </div>
                              <span className="text-xs font-bold uppercase tracking-widest text-stone-400">YTD Performance</span>
                          </div>
@@ -176,28 +181,34 @@ export const Profile: React.FC<ProfileProps> = ({ user, currency, lang, onAssetC
                     <h3 className="text-xs font-bold uppercase tracking-widest text-stone-900 mb-6 flex items-center gap-2 border-b border-stone-200 pb-3">
                         <List size={14} /> Recent Activity Ledger
                     </h3>
-                    <div className="space-y-4">
-                        {activities.map(item => (
-                            <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl border border-stone-100 hover:shadow-md hover:border-stone-200 transition-all group">
-                                <div className="flex items-center gap-5">
-                                    <div className={`p-3 rounded-full border ${item.type === 'PAYOUT' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-stone-50 border-stone-100 text-stone-500'}`}>
-                                        {item.type === 'PAYOUT' && <ArrowUpRight size={18} />}
-                                        {item.type === 'BOOKING' && <Clock size={18} />}
-                                        {item.type === 'ADMIN' && <FileCheck size={18} />}
-                                        {item.type === 'PURCHASE' && <FileText size={18} />}
+                    {totalEquity > 0 ? (
+                        <div className="space-y-4">
+                            {activities.map(item => (
+                                <div key={item.id} className="flex items-center justify-between p-5 bg-white rounded-2xl border border-stone-100 hover:shadow-md hover:border-stone-200 transition-all group">
+                                    <div className="flex items-center gap-5">
+                                        <div className={`p-3 rounded-full border ${item.type === 'PAYOUT' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-stone-50 border-stone-100 text-stone-500'}`}>
+                                            {item.type === 'PAYOUT' && <ArrowUpRight size={18} />}
+                                            {item.type === 'BOOKING' && <Clock size={18} />}
+                                            {item.type === 'ADMIN' && <FileCheck size={18} />}
+                                            {item.type === 'PURCHASE' && <FileText size={18} />}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold text-stone-900">{item.title}</div>
+                                            <div className="text-[10px] text-stone-400 uppercase tracking-widest mt-1">{item.date} • {item.type}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-sm font-bold text-stone-900">{item.title}</div>
-                                        <div className="text-[10px] text-stone-400 uppercase tracking-widest mt-1">{item.date} • {item.type}</div>
+                                    <div className="text-right">
+                                        <div className={`text-sm font-bold ${item.type === 'PAYOUT' ? 'text-green-600' : 'text-stone-900'}`}>{item.amount}</div>
+                                        <div className="text-[10px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 inline-block px-2 py-0.5 mt-1 rounded-md">{item.status}</div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className={`text-sm font-bold ${item.type === 'PAYOUT' ? 'text-green-600' : 'text-stone-900'}`}>{item.amount}</div>
-                                    <div className="text-[10px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 inline-block px-2 py-0.5 mt-1 rounded-md">{item.status}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                         <div className="p-8 border-2 border-dashed border-stone-100 rounded-2xl text-center">
+                             <p className="text-stone-400 text-sm mb-0">No recent activity recorded.</p>
+                         </div>
+                    )}
                 </div>
 
             </div>
@@ -271,20 +282,27 @@ export const Profile: React.FC<ProfileProps> = ({ user, currency, lang, onAssetC
                     />
                 ))
             ) : (
-                <div className="col-span-full py-24 text-center border-2 border-dashed border-stone-200 rounded-3xl bg-white/50">
-                    <div className="mx-auto w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mb-6 text-stone-300">
-                        {activeTab === 'PORTFOLIO' ? <TrendingUp size={24} /> : <ShieldCheck size={24} />}
+                // AGGRESSIVE EMPTY STATE
+                <div className="col-span-full py-24 text-center border-2 border-dashed border-stone-200 rounded-3xl bg-white/50 flex flex-col items-center justify-center animate-in zoom-in-95">
+                    <div className="mx-auto w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mb-6 text-stone-900 shadow-sm">
+                        <Diamond size={32} strokeWidth={1.5} />
                     </div>
-                    <p className="text-stone-900 font-serif text-xl mb-2">
+                    <h3 className="text-3xl font-serif text-stone-900 mb-2 font-medium">
                         {activeTab === 'PORTFOLIO' 
-                            ? "Portfolio Empty" 
+                            ? "Your Collection Awaits" 
                             : "Wishlist Empty"}
-                    </p>
-                    <p className="text-stone-400 text-sm mb-4">
+                    </h3>
+                    <p className="text-stone-500 text-sm mb-8 max-w-md mx-auto leading-relaxed">
                          {activeTab === 'PORTFOLIO' 
-                            ? "Start your journey by acquiring your first asset fraction." 
-                            : "Save your favorite assets here for quick access."}
+                            ? "You haven't acquired any assets yet. Begin your journey to access the Vault and unlock exclusive booking privileges." 
+                            : "You haven't saved any assets. Browse the marketplace to find your next acquisition."}
                     </p>
+                    <button 
+                        onClick={onBrowse}
+                        className="flex items-center gap-3 px-8 py-4 bg-stone-900 text-white font-bold uppercase tracking-widest rounded-full hover:bg-stone-800 hover:shadow-xl hover:scale-105 transition-all duration-300"
+                    >
+                        Explore Marketplace <ArrowRight size={16} />
+                    </button>
                 </div>
             )}
         </div>
